@@ -153,10 +153,10 @@ while running:
         # Draw game objects
         screen.fill(BLACK)
         pygame.draw.line(screen, WHITE, (0, boundary_y), (SCREEN_WIDTH, boundary_y)) # boundary between player and crystal
-        for surface in surfaces:
-            pygame.draw.rect(screen, WHITE, surface)
-        pygame.draw.line(screen, WHITE, *left_diagonal, 2)
-        pygame.draw.line(screen, WHITE, *right_diagonal, 2)
+        # for surface in surfaces:
+        #     pygame.draw.rect(screen, WHITE, surface)
+        # pygame.draw.line(screen, WHITE, *left_diagonal, 2)
+        # pygame.draw.line(screen, WHITE, *right_diagonal, 2)
         player.draw(screen)
         crystal.draw(screen)
         game_state.draw(screen)
