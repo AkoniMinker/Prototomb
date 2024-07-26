@@ -1,9 +1,7 @@
 import pygame
 import sys
-from entities import Player
-from entities import Crystal
-from game_logic import GameState
-from game_logic import Wave
+from entities import Player, Crystal
+from game_logic import GameState, Wave
 from utils import Shop
 
 # Initialize Pygame
@@ -35,6 +33,29 @@ GAME_OVER = 1
 current_state = PLAYING
 game_over_timer = 180  # 3 seconds at 60 FPS
 last_wave_number = 1
+
+# Load sounds
+player_attack_sound = pygame.mixer.Sound('p_attack.mp3')
+crystal_damaged_sound = pygame.mixer.Sound('c_damaged.mp3')
+
+# Create surfaces (boundaries)
+surfaces = [
+    pygame.Rect(0, 50, 10, SCREEN_HEIGHT - 100),  # Left vertical line
+    pygame.Rect(SCREEN_WIDTH - 10, 50, 10, SCREEN_HEIGHT - 100),  # Right vertical line
+    pygame.Rect(50, 50, 250, 10),  # Top left horizontal line
+    pygame.Rect(SCREEN_WIDTH - 300, 50, 250, 10),  # Top right horizontal line
+    pygame.Rect(50, SCREEN_HEIGHT - 60, SCREEN_WIDTH - 100, 10),  # Bottom horizontal line
+    pygame.Rect(200, 150, 150, 100),  # Left box
+    pygame.Rect(SCREEN_WIDTH - 350, 150, 150, 100),  # Right box
+]
+
+# Create diagonal lines for boxes
+left_diagonal = ((200, 250), (350, 150))
+right_diagonal = ((SCREEN_WIDTH - 350, 250), (SCREEN_WIDTH - 200, 150))
+
+
+# Create quit button
+quit_button = pygame.Rect(SCREEN_WIDTH - 40, 10, 30, 30)
 
 
 def reset_game(from_last_wave=False):
@@ -93,9 +114,15 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        elif event.type == pygame.KEYDOWN and current_state == PLAYING:
-            if event.key in (pygame.K_SPACE, pygame.K_RETURN):
+        elif event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_ESCAPE:
+                running = False
+            elif event.key in (pygame.K_SPACE, pygame.K_RETURN) and (player.attack_cooldown == 0) and current_state == PLAYING:
                 player.attack_action()
+                player_attack_sound.play()
+        elif event.type == pygame.MOUSEBUTTONDOWN:
+            if quit_button.collidepoint(event.pos):
+                running = False
 
     if current_state == PLAYING:
         # Get pressed keys for continuous movement
@@ -113,6 +140,11 @@ while running:
         # Update game state
         game_state.update(crystal, player)
 
+        # Check for crystal damage
+        if crystal.health < crystal.last_health:
+            crystal_damaged_sound.play()
+        crystal.last_health = crystal.health
+
         # Check for game over conditions
         if crystal.health <= 0 or player.health <= 0:
             current_state = GAME_OVER
@@ -120,10 +152,21 @@ while running:
 
         # Draw game objects
         screen.fill(BLACK)
-        pygame.draw.line(screen, WHITE, (0, boundary_y), (SCREEN_WIDTH, boundary_y))
+        pygame.draw.line(screen, WHITE, (0, boundary_y), (SCREEN_WIDTH, boundary_y)) # boundary between player and crystal
+        for surface in surfaces:
+            pygame.draw.rect(screen, WHITE, surface)
+        pygame.draw.line(screen, WHITE, *left_diagonal, 2)
+        pygame.draw.line(screen, WHITE, *right_diagonal, 2)
         player.draw(screen)
         crystal.draw(screen)
         game_state.draw(screen)
+
+        # Draw quit button
+        pygame.draw.rect(screen, RED, quit_button)
+        quit_x = quit_button.x + 5
+        quit_y = quit_button.y + 5
+        pygame.draw.line(screen, WHITE, (quit_x, quit_y), (quit_x + 20, quit_y + 20), 2)
+        pygame.draw.line(screen, WHITE, (quit_x, quit_y + 20), (quit_x + 20, quit_y), 2)
 
     elif current_state == GAME_OVER:
         handle_game_over()

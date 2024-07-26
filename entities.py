@@ -71,6 +71,7 @@ class Crystal:
         # Set the crystal's health attributes
         self.max_health = 100
         self.health = self.max_health
+        self.last_health = self.health
 
         # Set the crystal's appearance
         self.color = (0, 0, 255)  # Blue
@@ -80,6 +81,9 @@ class Crystal:
         self.health_bar = HealthBar(self.x, self.y - 20, self.size, 5, self.max_health)
 
     def take_damage(self, amount):
+        # Grab health before damage
+        self.last_health = self.health
+
         # Reduce the crystal's health by the damage amount
         self.health -= amount
 
