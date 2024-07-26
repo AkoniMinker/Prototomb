@@ -1,2 +1,2 @@
 # Prototomb
-prototype of paratomb game idea I had
+I'm making this game as a showcase of python fundamentals
